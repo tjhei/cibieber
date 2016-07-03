@@ -37,7 +37,10 @@ def github_set_commit_status(user, repo, token, sha1, state="success", descripti
 
     description = description[0:min(len(description),140)] #github doesn't like too long description
 
-    data = js.dumps({'state' : state, 'context' : 'default', 'description' : description, 'target_url' : link})
+    if github_context=="" or token=="":
+        return
+
+    data = js.dumps({'state' : state, 'context' : github_context, 'description' : description, 'target_url' : link})
     url = "https://api.github.com/repos/{0}/{1}/statuses/{2}".format(github_user, github_repo, sha1)
 
     req = urllib2.Request(url)
@@ -239,6 +242,7 @@ if len(sys.argv)<2:
     print "runner.py do-current\n\t\t tests the current revision in this directory"
     print "runner.py run-all\n\t\t runs all revisions on master not tested"
     print "runner.py do-pullrequests\n\t\t test all open PRs that are okay to be tested"
+    print "runner.py mark-pullrequests\n\t\t mark all open PRs as pending on github"
     print ""
     print "runner.py newdb\n\t\t creates a new database overwriting the existing one"
     print "runner.py dump\n\t\t lists entry in the current database"
@@ -403,6 +407,13 @@ if whattodo == "do-pullrequests":
                 print "not allowed! please add a comment containing '/run-tests'"
                                 
 if whattodo == "mark-pullrequests":
+    if github_context=="":
+        print " no context given in config.py. Exiting."
+        raise RuntimeError()
+    if token=="":
+        print " no token given in config.py. Exiting."
+        raise RuntimeError()
+
     r = github_read(token, "https://api.github.com/repos/{0}/{1}/pulls".format(github_user, github_repo))
     data = js.loads(r)
     print "found {0} pull requests...".format(len(data))
@@ -440,7 +451,7 @@ if whattodo == "mark-pullrequests":
             has_status = False
             desc = ""
             for st in data:
-                if st['context']=="default":
+                if st['context']==github_context:
                     has_status = True
                     desc = st['description']
             
