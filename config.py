@@ -57,6 +57,10 @@ def execute_test(sha1, name):
 # number of tests to go back in time when doing "run-all" default 10
 n_old_tests = 2
 
+# number of tests to run before stopping (make automated tester more
+# responsive for long running tests)
+n_max_to_run = 1024
+
 # if a user that is_allowed() posts a comment that has
 # has_hotword(text) return True, the PR is tested
 def has_hotword(text):

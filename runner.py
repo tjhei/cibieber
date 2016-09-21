@@ -231,12 +231,12 @@ def test(repodir, h, name=""):
     h.save()
     return good
 
-
+tests_run = 0
 whattodo = ""
 
 if len(sys.argv)<2:
-    print "gitautotester"
-    print "-------------"
+    print "cibieber"
+    print "--------"
     print ""
     print "usage:"
     print "runner.py do-current\n\t\t tests the current revision in this directory"
@@ -300,6 +300,10 @@ if whattodo == "run-all":
 
             ret = subprocess.check_call("cd {0} && git reset --hard -q && git clean -fd -q".format(repodir), shell=True)
             test(repodir, h, "")
+            tests_run += 1
+            if tests_run>=n_max_to_run:
+                print "hit max of tests to run. Exiting."
+                break
         
         else:
             print "skipping {}".format(sha1)
@@ -382,6 +386,11 @@ if whattodo == "do-pullrequests":
                         allowed = True
             
             if allowed:
+                tests_run += 1
+                if tests_run>n_max_to_run:
+                    print "hit max of tests to run. Exiting."
+                    break
+
                 print "testing..."
                 github_set_commit_status(github_user, github_repo, token, sha, "pending", "tester is running")
 
