@@ -1,5 +1,3 @@
-#FROM tjhei/dealii-clang:v8.4.1
-
 FROM dealii/dealii:v8.5.0-gcc-mpi-fulldepscandi-debugrelease
 
 MAINTAINER timo.heister@gmail.com
