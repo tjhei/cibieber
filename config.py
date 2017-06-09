@@ -32,6 +32,7 @@ def execute_test(sha1, name):
     #cmd = 'docker run --rm=true ' \
     cmd = './docker_with_timeout.sh 30m ' \
           '--net none ' \
+          '-e QUIET=1 ' \
           '-e hash={0} ' \
           '-e name={1} ' \
           '-e BUILDS=\'clang\' ' \
