@@ -8,7 +8,7 @@
 
 # settings from ENV variables:
 # BUILDS:
-#  (gcc|clang)[petsc]
+#  (gcc|clang)[petsc]|astyle
 # QUIET=1 (default, not) -- only print summary
 
 # example usage:
@@ -50,6 +50,19 @@ run()
 build=$1
 desc=$2
 submit=$3
+
+if [[ $build == "astyle" ]];
+then
+  LOGFILE="`pwd`/changes.diff"
+  cd ~/source
+  ./doc/indent || { echo "indent FAILED"; return; }
+  git diff >$LOGFILE
+  echo "git diff >$LOGFILE"
+  git diff --exit-code --name-only || { echo "FAILED: `git diff --name-only`"; return; }
+  echo "ok"
+  return
+fi
+
 petsc="OFF"
 if [[ $build =~ .*petsc.* ]];
 then
@@ -63,9 +76,10 @@ fi
 
 cmake -G "Ninja" $compiler -D ASPECT_USE_PETSC=$petsc -D ASPECT_RUN_ALL_TESTS=ON ~/source || { echo "configure FAILED"; return; }
 nice ninja || { echo "build FAILED"; return; }
-nice ctest --output-on-failure -S ~/source/tests/run_testsuite.cmake -DDESCRIPTION="$desc" -Dsubmit=$submit -V -j 10 || { echo "test FAILED"; }
+nice ctest --output-on-failure -S ~/source/tests/run_testsuite.cmake -DDESCRIPTION="$desc" -Dsubmit=$submit -V -j 7 || { echo "test FAILED"; }
 #nice ninja generate_reference_patch
 nice ninja generate_reference_output
+echo "ok"
 }
 
 
@@ -92,6 +106,7 @@ do
 
   grep "FAILED" $logfile | grep -v "FAILED: /" | grep -v "The following tests FAILED" | grep -v "FAILED: cd /" | tee -a $summary
 
+  grep "^ok$" $logfile | tee -a $summary
   grep "tests passed" $logfile | tee -a $summary
 done
 

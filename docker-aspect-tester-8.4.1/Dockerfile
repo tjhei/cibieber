@@ -10,7 +10,3 @@ USER bob
 
 RUN chmod u+x *.sh
 CMD ./script.sh
-
-
-
-
